@@ -10,6 +10,8 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
+import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatDialog;
@@ -45,6 +47,8 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
     private EditText etFeedback;
     private LinearLayout ratingButtons, feedbackButtons;
 
+    String feedbackValidationError;
+
     private float threshold;
     private int session;
     private boolean thresholdPassed = true;
@@ -65,6 +69,7 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         setContentView(R.layout.dialog_rating);
+        setCanceledOnTouchOutside(false);
 
         tvTitle = (TextView) findViewById(R.id.dialog_rating_title);
         tvNegative = (TextView) findViewById(R.id.dialog_rating_button_negative);
@@ -140,6 +145,8 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
         tvSubmit.setOnClickListener(this);
         tvCancel.setOnClickListener(this);
 
+        feedbackValidationError = builder.feedbackValidationError;
+
         if (session == 1) {
             tvNegative.setVisibility(View.GONE);
         }
@@ -163,6 +170,7 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
             if (TextUtils.isEmpty(feedback)) {
 
                 Animation shake = AnimationUtils.loadAnimation(context, R.anim.shake);
+                etFeedback.setError(feedbackValidationError);
                 etFeedback.startAnimation(shake);
                 return;
             }
@@ -176,7 +184,7 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
 
         } else if (view.getId() == R.id.dialog_rating_button_feedback_cancel) {
 
-            dismiss();
+           openRate();
 
         }
 
@@ -236,6 +244,16 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
         ivIcon.setVisibility(View.GONE);
         tvTitle.setVisibility(View.GONE);
         ratingBar.setVisibility(View.GONE);
+    }
+
+    void openRate(){
+        tvFeedback.setVisibility(View.GONE);
+        etFeedback.setVisibility(View.GONE);
+        feedbackButtons.setVisibility(View.GONE);
+        ratingButtons.setVisibility(View.VISIBLE);
+        ivIcon.setVisibility(View.VISIBLE);
+        tvTitle.setVisibility(View.VISIBLE);
+        ratingBar.setVisibility(View.VISIBLE);
     }
 
     private void openPlaystore(Context context) {
@@ -339,6 +357,7 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
         private RatingDialogFormListener ratingDialogFormListener;
         private RatingDialogListener ratingDialogListener;
         private Drawable drawable;
+        private String feedbackValidationError;
 
         private int session = 1;
         private float threshold = 1;
@@ -493,6 +512,11 @@ public class RatingDialog extends AppCompatDialog implements RatingBar.OnRatingB
 
         public Builder playstoreUrl(String playstoreUrl) {
             this.playstoreUrl = playstoreUrl;
+            return this;
+        }
+
+        public Builder feedbackValidationError(@StringRes int error){
+            feedbackValidationError = context.getString(error);
             return this;
         }
 
